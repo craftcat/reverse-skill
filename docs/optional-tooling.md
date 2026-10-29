@@ -117,6 +117,27 @@ npx skills add OthmanAdi/planning-with-files --skill planning-with-files -g
 
 ---
 
+## Measuring the effect
+
+There is no single internal "tokens used" gauge; measure with the tools' own
+counters plus before/after benchmarks.
+
+- **rtk (CLI-output tokens):** baseline the repo's heavy read-only commands with
+  `sh scripts/measure-tokens.sh` (raw bytes + estimated tokens), then re-run it
+  after enabling the rtk hook. `rtk stats` is the authoritative tokens-saved
+  counter (its own SQLite analytics). Current raw baseline for the default
+  command set is ~18k estimated tokens, dominated by recursive `ls`/`find` over
+  `skills/` — exactly what rtk compresses.
+- **planning-with-files (memory/state):** semi-quantitative. Track via
+  `/pwf-status` how many context resets a plan survived and whether files were
+  re-derived; the rest is qualitative (did work continue without re-work).
+- **Connector / plugin cleanup (always-on context):** compare, before vs after,
+  the count of deferred tool names and the skill-listing line count → tokens.
+  Business-plugin removal is the larger win (skills ride in the always-on
+  listing; connector tool schemas are deferred).
+
+---
+
 ## Deferred on purpose
 
 - **claude-mem** (session auto-summary memory) overlaps the existing
