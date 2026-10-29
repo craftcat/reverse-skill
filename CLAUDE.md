@@ -40,3 +40,9 @@ Read `README_AI.md` for full bootstrap sequence.
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/verify-routing-coherence.ps1
 ```
+
+## Optional local tooling (not part of routing core)
+
+Context/token-hygiene helpers (rtk, planning-with-files) are **opt-in** and live
+only in git-ignored per-client config. They are never a routing dependency. Audit
+and install notes: `docs/optional-tooling.md`.
