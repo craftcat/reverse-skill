@@ -7,6 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 ### Added
+- **Optional local tooling guide** — `docs/optional-tooling.md` documents two opt-in, client-side helpers outside the routing core: `rtk-oss` (Apache-2.0 CLI-output compression; pinned `cargo` install, telemetry kept off) and `planning-with-files` (crash- / `/clear`-resilient plans with SHA-256 attestation). Includes a supply-chain audit at pinned commits, measured costs, and a third candidate. `scripts/measure-tokens.sh` records the raw CLI-output baseline for before/after comparison. `CLAUDE.md` gains a one-line optional pointer.
 - **CI runs remaining unwired suites** — `test-p0-friction.ps1` on the Windows leg of `routing-tests` (Windows PowerShell 5.1); `case-review/tests/test_review_case.py` in the Linux `case-contract` job. `test-workflow-title-safety.ps1` was already wired.
 
 ### Fixed

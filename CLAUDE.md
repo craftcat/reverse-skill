@@ -43,6 +43,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File skills/scripts/verify-routin
 
 ## Optional local tooling (not part of routing core)
 
-Context/token-hygiene helpers (rtk, planning-with-files) are **opt-in** and live
+Context/token-hygiene helpers (rtk-oss, planning-with-files) are **opt-in** and live
 only in git-ignored per-client config. They are never a routing dependency. Audit
 and install notes: `docs/optional-tooling.md`.

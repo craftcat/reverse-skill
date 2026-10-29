@@ -9,7 +9,7 @@
 #
 # Token estimate: bytes / 4 (a coarse, well-known heuristic — NOT a tokenizer).
 # For the authoritative, real savings a compressor delivered to an agent, read
-# that tool's own counter instead; for rtk that is `rtk stats`.
+# that tool's own counter instead; for rtk that is `rtk gain`.
 #
 # Usage:
 #   sh scripts/measure-tokens.sh              # default command set
@@ -23,7 +23,9 @@ set -u
 CMD_FILE=""
 while [ $# -gt 0 ]; do
     case "$1" in
-        -f|--file) CMD_FILE="${2:-}"; shift 2 ;;
+        -f|--file)
+            [ $# -ge 2 ] || { echo "missing value for $1" >&2; exit 2; }
+            CMD_FILE="$2"; shift 2 ;;
         -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
@@ -51,23 +53,22 @@ printf '%-34s %12s %12s\n' "command" "bytes" "~tokens"
 printf '%-34s %12s %12s\n' "-------" "-----" "-------"
 
 TOTAL_BYTES=0
-# Read command lines without a subshell so the totals survive the loop.
-OLDIFS=$IFS
-IFS='
-'
-for CMD in $CMDS_SRC; do
+# One command per line. A here-document keeps the loop in this shell (so the
+# totals survive) and avoids word splitting and globbing of the command text.
+while IFS= read -r CMD || [ -n "$CMD" ]; do
     [ -n "$CMD" ] || continue
     case "$CMD" in \#*) continue ;; esac
-    # Capture combined output; a non-zero exit is reported, not fatal.
-    OUT=$(eval "$CMD" 2>&1); RC=$?
+    # Combined output; stdin is detached so a command cannot eat the list.
+    # A non-zero exit is reported, not fatal.
+    OUT=$(eval "$CMD" </dev/null 2>&1); RC=$?
     BYTES=$(printf '%s' "$OUT" | wc -c | tr -d ' ')
-    TOKENS=$((BYTES / 4))
     TOTAL_BYTES=$((TOTAL_BYTES + BYTES))
     LABEL=$CMD
     [ "$RC" -eq 0 ] || LABEL="$CMD [rc=$RC]"
-    printf '%-34.34s %12s %12s\n' "$LABEL" "$BYTES" "$TOKENS"
-done
-IFS=$OLDIFS
+    printf '%-34.34s %12s %12s\n' "$LABEL" "$BYTES" "$((BYTES / 4))"
+done <<EOF
+$CMDS_SRC
+EOF
 
 printf '%-34s %12s %12s\n' "-------" "-----" "-------"
 printf '%-34s %12s %12s\n' "TOTAL (raw baseline)" "$TOTAL_BYTES" "$((TOTAL_BYTES / 4))"
@@ -75,7 +76,7 @@ printf '%-34s %12s %12s\n' "TOTAL (raw baseline)" "$TOTAL_BYTES" "$((TOTAL_BYTES
 echo
 if command -v rtk >/dev/null 2>&1; then
     echo "rtk detected: $(rtk --version 2>/dev/null | head -1)"
-    echo "  -> run \`rtk stats\` for the authoritative tokens-saved counter."
+    echo "  -> run \`rtk gain\` for the authoritative tokens-saved counter."
     echo "  -> re-run this script after enabling the rtk hook to compare the"
     echo "     raw baseline above against the compressed command stream."
 else
